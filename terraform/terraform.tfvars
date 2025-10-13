@@ -3,7 +3,7 @@
 
 # AWS Configuration
 aws_region  = "us-east-1"
-environment = "dev"
+environment = "prod"
 
 # ECS Cluster Configuration
 cluster_name = "portfolio-cluster"
@@ -12,7 +12,7 @@ cluster_name = "portfolio-cluster"
 ecr_repository_name = "portfolio-app"
 
 # GitHub Configuration
-github_repo = "waqu235/my-portfolio"
+github_repo = "umairk8devops/my-portfolio"
 
 # ECS Container Instance Configuration
 # Using t3a.nano for maximum cost efficiency - perfect for low-traffic portfolio
@@ -28,18 +28,17 @@ node_min_capacity     = 1            # Always keep at least 1 running
 
 # Existing VPC Configuration
 # Update these with your actual VPC and subnet IDs
-vpc_id = "vpc-0123456789abcdef0"
+vpc_id = "vpc-0c016749cb0288a97"
 
-# Private subnets where EKS nodes will be deployed
+# Private subnets where ECS nodes will be deployed
 private_subnet_ids = [
-  "subnet-0123456789abcdef1",
-  "subnet-0123456789abcdef2",
-  "subnet-0123456789abcdef3"
+  "subnet-03600d25d9465c32a",
+  "subnet-06cc9a1fb6ea901eb"
 ]
 
 # Public subnets for load balancers (optional)
-public_subnet_ids = [
-  "subnet-0123456789abcdef4",
-  "subnet-0123456789abcdef5",
-  "subnet-0123456789abcdef6"
-]
+#public_subnet_ids = [
+#  "subnet-0123456789abcdef4",
+#  "subnet-0123456789abcdef5",
+#  "subnet-0123456789abcdef6"
+#]
