@@ -61,12 +61,12 @@ variable "vpc_id" {
 }
 
 variable "private_subnet_ids" {
-  description = "List of private subnet IDs for EKS nodes"
+  description = "List of private subnet IDs for ECS tasks and ALB"
   type        = list(string)
 }
 
 variable "public_subnet_ids" {
-  description = "List of public subnet IDs for load balancers"
+  description = "List of public subnet IDs for Application Load Balancer"
   type        = list(string)
   default     = []
 }
