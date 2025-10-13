@@ -1,0 +1,45 @@
+# Example configuration for ECS deployment
+# Copy this to terraform.tfvars and update with your actual VPC details
+
+# AWS Configuration
+aws_region  = "us-east-1"
+environment = "dev"
+
+# ECS Cluster Configuration
+cluster_name = "portfolio-cluster"
+
+# ECR Configuration
+ecr_repository_name = "portfolio-app"
+
+# GitHub Configuration
+github_repo = "waqu235/my-portfolio"
+
+# ECS Container Instance Configuration
+# Using t3a.nano for maximum cost efficiency - perfect for low-traffic portfolio
+node_instance_type    = "t3a.nano"   # ~$3.07/month - 0.5GB RAM, 2 vCPU (burstable)
+
+# Alternative options (commented out):
+# node_instance_type    = "t3a.micro"  # ~$6.13/month - 1GB RAM, 2 vCPU
+# node_instance_type    = "t4g.nano"   # ~$3.07/month - 0.5GB RAM, 2 vCPU (ARM-based)
+
+node_desired_capacity = 1            # Start with 1 instance for cost efficiency
+node_max_capacity     = 2            # Scale up to 2 if needed  
+node_min_capacity     = 1            # Always keep at least 1 running
+
+# Existing VPC Configuration
+# Update these with your actual VPC and subnet IDs
+vpc_id = "vpc-0123456789abcdef0"
+
+# Private subnets where EKS nodes will be deployed
+private_subnet_ids = [
+  "subnet-0123456789abcdef1",
+  "subnet-0123456789abcdef2",
+  "subnet-0123456789abcdef3"
+]
+
+# Public subnets for load balancers (optional)
+public_subnet_ids = [
+  "subnet-0123456789abcdef4",
+  "subnet-0123456789abcdef5",
+  "subnet-0123456789abcdef6"
+]
