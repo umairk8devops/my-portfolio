@@ -360,16 +360,6 @@ output "ecs_cluster_name" {
   value       = aws_ecs_cluster.portfolio.name
 }
 
-output "alb_dns_name" {
-  description = "DNS name of the load balancer"
-  value       = aws_lb.portfolio.dns_name
-}
-
-output "alb_zone_id" {
-  description = "Zone ID of the load balancer"
-  value       = aws_lb.portfolio.zone_id
-}
-
 # GitHub OIDC Configuration for CI/CD - COMMENTED OUT (Using AWS Access Keys)
 # Uncomment if switching back to OIDC authentication
 #
