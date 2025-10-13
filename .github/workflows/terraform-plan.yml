@@ -67,45 +67,29 @@ jobs:
       id: validate
       run: terraform validate
       
-    - name: Create terraform.tfvars
+    - name: Verify terraform.tfvars
       run: |
-        cat > terraform.tfvars << EOF
-        github_repo = "${{ github.repository }}"
-        aws_region = "${{ env.AWS_REGION }}"
-        environment = "prod"
-        EOF
-        
-        # Add VPC configuration if secrets are available
-        if [ -n "${{ secrets.VPC_ID }}" ]; then
-          cat >> terraform.tfvars << EOF
-        vpc_id = "${{ secrets.VPC_ID }}"
-        private_subnet_ids = [$(echo "${{ secrets.PRIVATE_SUBNET_IDS }}" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')"]
-        public_subnet_ids = [$(echo "${{ secrets.PUBLIC_SUBNET_IDS }}" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')"]
-        EOF
+        if [ -f "terraform.tfvars" ]; then
+          echo "✅ Found existing terraform.tfvars file"
+          echo "📄 Current terraform.tfvars content:"
+          cat terraform.tfvars
+          
+          # Verify required variables are present
+          if grep -q "vpc_id" terraform.tfvars && grep -q "private_subnet_ids" terraform.tfvars; then
+            echo "✅ VPC configuration found in terraform.tfvars"
+          else
+            echo "⚠️  VPC configuration missing in terraform.tfvars"
+            echo "Please ensure vpc_id and private_subnet_ids are configured"
+          fi
         else
-          echo "⚠️  VPC secrets not configured - using example values"
-          cat >> terraform.tfvars << EOF
-        # vpc_id = "vpc-example123"
-        # private_subnet_ids = ["subnet-example1", "subnet-example2"]
-        # public_subnet_ids = ["subnet-example3", "subnet-example4"]
-        EOF
+          echo "❌ No terraform.tfvars file found!"
+          echo "Please create terraform.tfvars with your VPC configuration"
+          exit 1
         fi
-        
-        echo "📄 Generated terraform.tfvars:"
-        cat terraform.tfvars
         
     - name: Terraform Plan
       id: plan
       run: |
-        if [ -z "${{ secrets.VPC_ID }}" ]; then
-          echo "🚧 Running plan with example VPC values (will show validation errors)"
-          echo "To get accurate plan results, add these GitHub secrets:"
-          echo "• VPC_ID: Your existing VPC ID"
-          echo "• PRIVATE_SUBNET_IDS: Comma-separated private subnet IDs"  
-          echo "• PUBLIC_SUBNET_IDS: Comma-separated public subnet IDs"
-          echo ""
-        fi
-        
         # Determine plan options
         PLAN_OPTIONS=""
         if [ "${{ github.event.inputs.destroy }}" = "true" ]; then
@@ -113,12 +97,9 @@ jobs:
           echo "🔥 Running DESTROY plan"
         fi
         
-        # Run terraform plan
-        if [ -n "${{ secrets.VPC_ID }}" ]; then
-          terraform plan $PLAN_OPTIONS -no-color -out=tfplan
-        else
-          terraform plan $PLAN_OPTIONS -no-color -out=tfplan || true
-        fi
+        # Run terraform plan using existing terraform.tfvars
+        echo "🚀 Running terraform plan with existing terraform.tfvars configuration"
+        terraform plan $PLAN_OPTIONS -no-color -out=tfplan
         
         # Generate human-readable output
         terraform show -no-color tfplan > plan_output.txt 2>/dev/null || echo "Plan output not available" > plan_output.txt
@@ -217,26 +198,14 @@ jobs:
         echo "- Validate: ${{ steps.validate.outcome }}" >> $GITHUB_STEP_SUMMARY
         echo "- Plan: ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
         
-        if [ -n "${{ secrets.VPC_ID }}" ]; then
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **VPC Configuration**: Using actual VPC secrets" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ **VPC Configuration**: Using example values (add VPC_ID, PRIVATE_SUBNET_IDS, PUBLIC_SUBNET_IDS secrets for accurate plans)" >> $GITHUB_STEP_SUMMARY
-        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **VPC Configuration**: Using terraform.tfvars file" >> $GITHUB_STEP_SUMMARY
         
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📦 **Artifacts**: Plan files uploaded for 30 days" >> $GITHUB_STEP_SUMMARY
         
     - name: Plan Status Check
       if: steps.plan.outcome == 'failure'
-      env:
-        HAS_VPC_CONFIG: ${{ secrets.VPC_ID != '' }}
       run: |
-        if [ "$HAS_VPC_CONFIG" = "true" ]; then
-          echo "❌ Terraform plan failed with real VPC configuration"
-          exit 1
-        else
-          echo "⚠️  Plan failed but VPC secrets not configured - this is expected"
-          echo "Add VPC_ID, PRIVATE_SUBNET_IDS, and PUBLIC_SUBNET_IDS secrets for accurate validation"
-        fi
+        echo "❌ Terraform plan failed - check the plan output above for details"
+        exit 1
