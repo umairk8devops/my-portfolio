@@ -2,6 +2,8 @@ name: Deploy Portfolio to ECS (AWS Keys)
 
 on:
   workflow_dispatch:  # Manual trigger only
+  
+  # Uncomment these after setting up your AWS infrastructure and secrets:
   # push:
   #   branches: [ main ]
   # pull_request:
@@ -12,14 +14,124 @@ env:
   ECR_REPOSITORY: portfolio-app
   ECS_CLUSTER_NAME: portfolio-cluster-ecs
   ECS_SERVICE_NAME: portfolio-service
+  TF_VERSION: 1.9.8
 
 permissions:
   contents: read
+  pull-requests: write  # Needed for Terraform plan comments
 
 jobs:
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Terraform Format Check
+      run: terraform fmt -check
+      continue-on-error: true
+      
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Validate
+      run: terraform validate
+      
+    - name: Create terraform.tfvars for CI
+      run: |
+        cat > terraform.tfvars << EOF
+        github_repo = "${{ github.repository }}"
+        aws_region = "${{ env.AWS_REGION }}"
+        environment = "prod"
+        
+        # These would be provided by your existing infrastructure
+        # vpc_id = "vpc-xxxxxxxxx"
+        # private_subnet_ids = ["subnet-xxxxxxxxx", "subnet-yyyyyyyyy"]
+        # public_subnet_ids = ["subnet-zzzzzzzzz", "subnet-aaaaaaaaa"]
+        EOF
+        
+    - name: Terraform Plan
+      id: plan
+      run: |
+        # Skip plan if required infrastructure variables are not set
+        if [ -z "${{ secrets.VPC_ID }}" ]; then
+          echo "Skipping Terraform plan - VPC_ID secret not configured"
+          echo "To enable infrastructure validation, add these GitHub secrets:"
+          echo "- VPC_ID: Your existing VPC ID"
+          echo "- PRIVATE_SUBNET_IDS: Comma-separated private subnet IDs"  
+          echo "- PUBLIC_SUBNET_IDS: Comma-separated public subnet IDs"
+          exit 0
+        fi
+        
+        # Update tfvars with actual values if secrets are available
+        cat >> terraform.tfvars << EOF
+        vpc_id = "${{ secrets.VPC_ID }}"
+        private_subnet_ids = [$(echo "${{ secrets.PRIVATE_SUBNET_IDS }}" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')"]
+        public_subnet_ids = [$(echo "${{ secrets.PUBLIC_SUBNET_IDS }}" | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')"]
+        EOF
+        
+        terraform plan -no-color -out=tfplan
+        terraform show -no-color tfplan > plan_output.txt
+      continue-on-error: true
+      
+    - name: Update Pull Request (if PR)
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          let planOutput = '';
+          try {
+            planOutput = fs.readFileSync('terraform/plan_output.txt', 'utf8');
+          } catch (error) {
+            planOutput = 'Could not read plan output';
+          }
+          
+          const output = `#### Terraform Plan 📖 \`${{ steps.plan.outcome }}\`
+          
+          <details><summary>Show Plan</summary>
+          
+          \`\`\`terraform
+          ${planOutput}
+          \`\`\`
+          
+          </details>
+          
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Workflow: \`${{ github.workflow }}\`*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+          
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    needs: terraform-plan
     
     steps:
     - name: Checkout code

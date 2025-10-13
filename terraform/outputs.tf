@@ -61,6 +61,11 @@ output "next_steps" {
     2. Add these to your GitHub repository secrets:
        AWS_ACCESS_KEY_ID = (your IAM user access key)
        AWS_SECRET_ACCESS_KEY = (your IAM user secret key)
+       
+       Optional - For Terraform plan validation in CI/CD:
+       VPC_ID = ${data.aws_vpc.existing.id}
+       PRIVATE_SUBNET_IDS = ${join(",", var.private_subnet_ids)}
+       PUBLIC_SUBNET_IDS = ${join(",", var.public_subnet_ids)}
     
     3. Your application will be available at:
        http://${aws_lb.portfolio.dns_name}
