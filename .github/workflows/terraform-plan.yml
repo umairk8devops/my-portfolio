@@ -9,7 +9,6 @@ on:
         default: 'prod'
         type: choice
         options:
-          - dev
           - prod
       destroy:
         description: 'Run terraform plan -destroy'
@@ -33,7 +32,7 @@ permissions:
 
 jobs:
   terraform-plan:
-    name: Terraform Plan (${{ github.event.inputs.environment || 'PR Review' }})
+    name: Terraform Plan (Production)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -73,7 +72,7 @@ jobs:
         cat > terraform.tfvars << EOF
         github_repo = "${{ github.repository }}"
         aws_region = "${{ env.AWS_REGION }}"
-        environment = "${{ github.event.inputs.environment || 'prod' }}"
+        environment = "prod"
         EOF
         
         # Add VPC configuration if secrets are available
@@ -129,7 +128,7 @@ jobs:
         if [ "${{ github.event.inputs.destroy }}" = "true" ]; then
           echo "🔥 **DESTROY PLAN** - This will delete resources!" >> plan_summary.txt
         fi
-        echo "Environment: ${{ github.event.inputs.environment || 'PR Review' }}" >> plan_summary.txt
+        echo "Environment: Production" >> plan_summary.txt
         echo "AWS Region: ${{ env.AWS_REGION }}" >> plan_summary.txt
         echo "Repository: ${{ github.repository }}" >> plan_summary.txt
         echo "" >> plan_summary.txt
@@ -147,7 +146,7 @@ jobs:
     - name: Upload Plan Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: terraform-plan-${{ github.event.inputs.environment || 'pr' }}-${{ github.run_number }}
+        name: terraform-plan-prod-${{ github.run_number }}
         path: |
           terraform/tfplan
           terraform/plan_output.txt

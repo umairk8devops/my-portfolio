@@ -9,13 +9,6 @@ terraform {
       version = "~> 5.0"
     }
   }
-  
-  # Configure remote state (uncomment and update when ready)
-  # backend "s3" {
-  #   bucket = "your-terraform-state-bucket"
-  #   key    = "portfolio/terraform.tfstate"
-  #   region = "us-east-1"
-  # }
 }
 
 provider "aws" {
