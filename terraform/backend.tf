@@ -7,7 +7,7 @@ terraform {
     key            = "portfolio/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    # dynamodb_table = "terraform-locks"  # Commented out - no locking needed for single user
+    # DynamoDB locking disabled for single-user portfolio project
     
     # Additional security settings
     # kms_key_id     = "alias/terraform-bucket-key"  # Uncomment if using KMS
