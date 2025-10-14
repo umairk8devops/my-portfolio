@@ -128,6 +128,44 @@ jobs:
       if: steps.plan.outcome == 'failure'
       run: exit 1
 
+  terraform-apply:
+    name: Terraform Apply (Create Infrastructure)
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    defaults:
+      run:
+        working-directory: terraform
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        
+    - name: Terraform Init
+      run: terraform init
+      
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      
+    - name: Get ECR Repository URI
+      id: ecr-uri
+      run: |
+        ECR_URI=$(terraform output -raw ecr_repository_url)
+        echo "ecr_uri=$ECR_URI" >> $GITHUB_OUTPUT
+        echo "✅ ECR Repository: $ECR_URI"
+
   # test:
   #   name: Run Tests
   #   runs-on: ubuntu-latest
@@ -155,7 +193,7 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
-    needs: terraform-plan  # Changed from 'test' to 'terraform-plan'
+    needs: terraform-apply  # Changed from 'terraform-plan' to 'terraform-apply'
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     
     steps:
