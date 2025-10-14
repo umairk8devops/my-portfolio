@@ -30,15 +30,14 @@ node_min_capacity     = 1            # Always keep at least 1 running
 # Update these with your actual VPC and subnet IDs
 vpc_id = "vpc-0c016749cb0288a97"
 
-# Private subnets where ECS nodes will be deployed
-private_subnet_ids = [
+# Public subnets connected directly to Internet Gateway
+public_subnet_ids = [
   "subnet-03600d25d9465c32a",
   "subnet-06cc9a1fb6ea901eb"
 ]
 
-# Public subnets for load balancers (optional)
-#public_subnet_ids = [
-#  "subnet-0123456789abcdef4",
-#  "subnet-0123456789abcdef5",
-#  "subnet-0123456789abcdef6"
+# Private subnets where ECS nodes will be deployed (you don't have any yet)
+#private_subnet_ids = [
+#  "subnet-private1",
+#  "subnet-private2"
 #]

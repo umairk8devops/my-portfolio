@@ -81,7 +81,7 @@ resource "aws_launch_template" "ecs" {
 # Auto Scaling Group
 resource "aws_autoscaling_group" "ecs" {
   name                = "${var.cluster_name}-ecs-asg"
-  vpc_zone_identifier = var.private_subnet_ids
+  vpc_zone_identifier = length(var.private_subnet_ids) > 0 ? var.private_subnet_ids : var.public_subnet_ids
   target_group_arns   = [aws_lb_target_group.portfolio.arn]
   health_check_type   = "ELB"
   health_check_grace_period = 300
