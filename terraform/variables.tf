@@ -63,6 +63,7 @@ variable "vpc_id" {
 variable "private_subnet_ids" {
   description = "List of private subnet IDs for ECS tasks and ALB"
   type        = list(string)
+  default     = []  # Default to empty list since we're using public subnets
 }
 
 variable "public_subnet_ids" {
