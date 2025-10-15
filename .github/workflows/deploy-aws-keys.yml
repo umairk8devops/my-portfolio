@@ -147,6 +147,6 @@ jobs:
         # Get load balancer DNS
         echo "🌐 Application URL:"
         aws elbv2 describe-load-balancers \
-          --names portfolio-cluster-alb \
+          --names ${{ env.ECS_CLUSTER_NAME }}-alb \
           --query 'LoadBalancers[0].DNSName' \
           --output text
