@@ -241,7 +241,7 @@ jobs:
         echo ""
         echo "🎯 Target Group Health:"
         ALB_TG_ARN=$(aws elbv2 describe-target-groups \
-          --names ${{ env.ECS_CLUSTER_NAME }}-tg \
+          --names portfolio-cluster-tg \
           --query 'TargetGroups[0].TargetGroupArn' \
           --output text)
         
@@ -258,7 +258,7 @@ jobs:
         echo ""
         echo "🌐 Application URL:"
         LB_DNS=$(aws elbv2 describe-load-balancers \
-          --names ${{ env.ECS_CLUSTER_NAME }}-alb \
+          --names portfolio-cluster-alb \
           --query 'LoadBalancers[0].DNSName' \
           --output text)
         
