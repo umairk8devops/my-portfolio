@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "portfolio" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 0
+          hostPort      = 80
           protocol      = "tcp"
         }
       ]
@@ -200,9 +200,9 @@ resource "aws_security_group" "ecs_nodes" {
   vpc_id      = data.aws_vpc.existing.id
 
   ingress {
-    description = "All traffic from ALB"
-    from_port   = 32768
-    to_port     = 65535
+    description = "HTTP from ALB"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
@@ -236,10 +236,10 @@ resource "aws_lb" "portfolio" {
 }
 
 resource "aws_lb_target_group" "portfolio" {
-  name     = "${var.cluster_name}-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = data.aws_vpc.existing.id
+  name        = "${var.cluster_name}-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.existing.id
   target_type = "instance"
 
   health_check {
@@ -248,7 +248,7 @@ resource "aws_lb_target_group" "portfolio" {
     interval            = 30
     matcher             = "200"
     path                = "/"
-    port                = "traffic-port"
+    port                = "traffic-port"  # This will use the dynamic port
     protocol            = "HTTP"
     timeout             = 5
     unhealthy_threshold = 2
