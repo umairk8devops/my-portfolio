@@ -1,6 +1,6 @@
 # IAM Policy for GitHub Actions CI/CD User
 
-This document provides the IAM policies needed for GitHub Actions to deploy to ECS.
+This document provides the IAM policies needed for GitHub Actions to deploy to ECS with Terraform.
 
 ## Required IAM Policies for GitHub Actions User
 
@@ -8,7 +8,7 @@ This document provides the IAM policies needed for GitHub Actions to deploy to E
 Attach this managed policy to your IAM user:
 - `AmazonEC2ContainerRegistryPowerUser`
 
-### 2. **Create Custom ECS Deployment Policy**
+### 2. **Create Custom ECS Infrastructure Policy**
 
 Create a custom policy with this JSON and attach it to your IAM user:
 
@@ -17,16 +17,42 @@ Create a custom policy with this JSON and attach it to your IAM user:
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "ECSDeploymentPermissions",
+            "Sid": "ECRFullAccess",
             "Effect": "Allow",
             "Action": [
-                "ecs:DescribeTaskDefinition",
-                "ecs:RegisterTaskDefinition",
-                "ecs:DescribeServices",
-                "ecs:UpdateService",
-                "ecs:DescribeClusters",
-                "ecs:ListTasks",
-                "ecs:DescribeTasks"
+                "ecr:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ECSFullAccess",
+            "Effect": "Allow",
+            "Action": [
+                "ecs:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "IAMPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:GetRole",
+                "iam:ListRoles",
+                "iam:PassRole",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "iam:CreateInstanceProfile",
+                "iam:DeleteInstanceProfile",
+                "iam:GetInstanceProfile",
+                "iam:AddRoleToInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile",
+                "iam:TagRole",
+                "iam:UntagRole",
+                "iam:TagInstanceProfile",
+                "iam:UntagInstanceProfile"
             ],
             "Resource": "*"
         },
@@ -34,22 +60,40 @@ Create a custom policy with this JSON and attach it to your IAM user:
             "Sid": "LoadBalancerPermissions",
             "Effect": "Allow",
             "Action": [
-                "elbv2:DescribeLoadBalancers",
-                "elbv2:DescribeTargetGroups",
-                "elbv2:DescribeTargetHealth"
+                "elasticloadbalancing:*"
             ],
             "Resource": "*"
         },
         {
-            "Sid": "IAMPassRolePermissions",
+            "Sid": "AutoScalingPermissions",
             "Effect": "Allow",
             "Action": [
-                "iam:PassRole"
+                "autoscaling:*"
             ],
-            "Resource": [
-                "arn:aws:iam::*:role/*ecs-task-execution-role*",
-                "arn:aws:iam::*:role/portfolio-*-ecs-task-execution-role"
-            ]
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2Permissions",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudWatchLogsPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:DeleteLogGroup",
+                "logs:DescribeLogGroups",
+                "logs:PutRetentionPolicy",
+                "logs:TagLogGroup",
+                "logs:UntagLogGroup",
+                "logs:TagResource",
+                "logs:UntagResource"
+            ],
+            "Resource": "*"
         },
         {
             "Sid": "STSPermissions",
@@ -68,28 +112,28 @@ Create a custom policy with this JSON and attach it to your IAM user:
 ### 1. **Create IAM User**
 ```bash
 # Create IAM user for GitHub Actions
-aws iam create-user --user-name github-actions-portfolio
+aws iam create-user --user-name github-actions-user
 
 # Create access key for the user
-aws iam create-access-key --user-name github-actions-portfolio
+aws iam create-access-key --user-name github-actions-user
 ```
 
 ### 2. **Attach Policies**
 ```bash
-# Attach ECR managed policy
+# Attach ECR managed policy (OPTIONAL - included in custom policy)
 aws iam attach-user-policy \
-  --user-name github-actions-portfolio \
+  --user-name github-actions-user \
   --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
 
-# Create and attach custom ECS policy
+# Create and attach custom ECS infrastructure policy
 # (First create the policy JSON file as shown above, then:)
 aws iam create-policy \
-  --policy-name GitHubActionsECSPolicy \
-  --policy-document file://ecs-deployment-policy.json
+  --policy-name GitHubActionsECSInfrastructurePolicy \
+  --policy-document file://ecs-infrastructure-policy.json
 
 aws iam attach-user-policy \
-  --user-name github-actions-portfolio \
-  --policy-arn arn:aws:iam::YOUR_ACCOUNT_ID:policy/GitHubActionsECSPolicy
+  --user-name github-actions-user \
+  --policy-arn arn:aws:iam::085047896115:policy/GitHubActionsECSInfrastructurePolicy
 ```
 
 ### 3. **Add Secrets to GitHub**
@@ -98,6 +142,128 @@ In your GitHub repository:
 - Add these repository secrets:
   - `AWS_ACCESS_KEY_ID`: Your IAM user's access key ID
   - `AWS_SECRET_ACCESS_KEY`: Your IAM user's secret access key
+
+## Quick Fix for Current User
+
+If you already have the `github-actions-user` created, you can attach the new policy:
+
+### Option 1: Update via AWS CLI
+```bash
+# Create the new policy JSON file
+cat > ecs-infrastructure-policy.json << 'EOF'
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ECRFullAccess",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ECSFullAccess",
+            "Effect": "Allow",
+            "Action": [
+                "ecs:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "IAMPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:GetRole",
+                "iam:ListRoles",
+                "iam:PassRole",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "iam:CreateInstanceProfile",
+                "iam:DeleteInstanceProfile",
+                "iam:GetInstanceProfile",
+                "iam:AddRoleToInstanceProfile",
+                "iam:RemoveRoleFromInstanceProfile",
+                "iam:TagRole",
+                "iam:UntagRole",
+                "iam:TagInstanceProfile",
+                "iam:UntagInstanceProfile"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LoadBalancerPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "elasticloadbalancing:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "AutoScalingPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2Permissions",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudWatchLogsPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:DeleteLogGroup",
+                "logs:DescribeLogGroups",
+                "logs:PutRetentionPolicy",
+                "logs:TagLogGroup",
+                "logs:UntagLogGroup",
+                "logs:TagResource",
+                "logs:UntagResource"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "STSPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "sts:GetCallerIdentity"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+
+# Create the policy (if it doesn't exist)
+aws iam create-policy \
+  --policy-name GitHubActionsECSInfrastructurePolicy \
+  --policy-document file://ecs-infrastructure-policy.json
+
+# Attach it to your existing user
+aws iam attach-user-policy \
+  --user-name github-actions-user \
+  --policy-arn arn:aws:iam::085047896115:policy/GitHubActionsECSInfrastructurePolicy
+```
+
+### Option 2: Update via AWS Console
+1. Go to AWS IAM Console
+2. Navigate to Users → github-actions-user
+3. Click "Add permissions" → "Attach policies directly"
+4. Click "Create policy" → JSON tab
+5. Paste the JSON policy from above
+6. Name it: `GitHubActionsECSInfrastructurePolicy`
+7. Attach it to the user
 
 ### 4. **Test Permissions**
 ```bash
