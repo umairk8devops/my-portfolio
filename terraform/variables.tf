@@ -27,7 +27,7 @@ variable "ecr_repository_name" {
 variable "github_repo" {
   description = "GitHub repository in format owner/repo"
   type        = string
-  default     = "waqu235/my-portfolio"
+  default     = "umairk8devops/my-portfolio"
 }
 
 variable "node_instance_type" {
