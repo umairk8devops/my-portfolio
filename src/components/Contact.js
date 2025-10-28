@@ -16,7 +16,7 @@ const Contact = () => {
               <a href="mailto:waqu235@gmail.com" className="contact-link">
                 📧 waqu235@gmail.com
               </a>
-              <a href="https://linkedin.com/in/umairwaqar" className="contact-link">
+              <a href="https://www.linkedin.com/in/umair-waqar-807b99233/" className="contact-link">
                 💼 LinkedIn
               </a>
               <a href="https://github.com/waqu235" className="contact-link">
@@ -32,7 +32,7 @@ const Contact = () => {
                 Please reach out to me directly on LinkedIn for the fastest response.
               </p>
               <a 
-                href="https://linkedin.com/in/umairwaqar" 
+                href="https://www.linkedin.com/in/umair-waqar-807b99233/" 
                 className="btn btn-primary linkedin-btn"
                 target="_blank"
                 rel="noopener noreferrer"
