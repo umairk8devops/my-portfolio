@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "portfolio" {
       portMappings = [
         {
           containerPort = 80
-          hostPort      = 80
+          hostPort      = 0
           protocol      = "tcp"
         }
       ]
@@ -200,9 +200,9 @@ resource "aws_security_group" "ecs_nodes" {
   vpc_id      = data.aws_vpc.existing.id
 
   ingress {
-    description = "HTTP from ALB"
-    from_port   = 80
-    to_port     = 80
+    description = "Dynamic ports from ALB"
+    from_port   = 32768
+    to_port     = 65535
     protocol    = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
@@ -248,7 +248,7 @@ resource "aws_lb_target_group" "portfolio" {
     interval            = 30
     matcher             = "200"
     path                = "/"
-    port                = "traffic-port"  # This will use the dynamic port
+    port                = "traffic-port"  # Uses the actual port ECS registers
     protocol            = "HTTP"
     timeout             = 5
     unhealthy_threshold = 2
@@ -360,91 +360,3 @@ output "ecs_cluster_name" {
   description = "Name of the ECS cluster"
   value       = aws_ecs_cluster.portfolio.name
 }
-
-# GitHub OIDC Configuration for CI/CD - COMMENTED OUT (Using AWS Access Keys)
-# Uncomment if switching back to OIDC authentication
-#
-# data "aws_iam_openid_connect_provider" "github" {
-#   url = "https://token.actions.githubusercontent.com"
-# }
-#
-# # IAM Role for GitHub Actions
-# resource "aws_iam_role" "github_actions" {
-#   name = "${var.cluster_name}-github-actions-role"
-#
-#   assume_role_policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Principal = {
-#           Federated = data.aws_iam_openid_connect_provider.github.arn
-#         }
-#         Action = "sts:AssumeRoleWithWebIdentity"
-#         Condition = {
-#           StringEquals = {
-#             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-#           }
-#           StringLike = {
-#             "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*"
-#           }
-#         }
-#       }
-#     ]
-#   })
-#
-#   tags = {
-#     Environment = var.environment
-#   }
-# }
-#
-# # Policy for GitHub Actions to access ECS and ECR
-# resource "aws_iam_role_policy" "github_actions" {
-#   name = "${var.cluster_name}-github-actions-policy"
-#   role = aws_iam_role.github_actions.id
-#
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "ecr:GetAuthorizationToken",
-#           "ecr:BatchCheckLayerAvailability",
-#           "ecr:GetDownloadUrlForLayer",
-#           "ecr:BatchGetImage",
-#           "ecr:InitiateLayerUpload",
-#           "ecr:UploadLayerPart",
-#           "ecr:CompleteLayerUpload",
-#           "ecr:PutImage"
-#         ]
-#         Resource = "*"
-#       },
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "ecs:DescribeTaskDefinition",
-#           "ecs:RegisterTaskDefinition",
-#           "ecs:DescribeServices",
-#           "ecs:UpdateService",
-#           "ecs:DescribeClusters"
-#         ]
-#         Resource = "*"
-#       },
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "elbv2:DescribeLoadBalancers"
-#         ]
-#         Resource = "*"
-#       },
-#       {
-#         Effect = "Allow"
-#         Action = [
-#           "iam:PassRole"
-#         ]
-#         Resource = aws_iam_role.ecs_task_execution.arn
-#       }
-#     ]
-#   })
-# }
