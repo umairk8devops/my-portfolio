@@ -15,6 +15,11 @@ output "alb_zone_id" {
   value       = aws_lb.portfolio.zone_id
 }
 
+output "alb_https_url" {
+  description = "HTTPS URL of the load balancer"
+  value       = "https://${aws_lb.portfolio.dns_name}"
+}
+
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
   value       = aws_ecr_repository.portfolio.repository_url
@@ -68,7 +73,8 @@ output "next_steps" {
        PUBLIC_SUBNET_IDS = ${join(",", var.public_subnet_ids)}
     
     3. Your application will be available at:
-       http://${aws_lb.portfolio.dns_name}
+       HTTP:  http://${aws_lb.portfolio.dns_name}
+       HTTPS: https://${aws_lb.portfolio.dns_name}
     
     4. Your ECR repository URL:
        ${aws_ecr_repository.portfolio.repository_url}
