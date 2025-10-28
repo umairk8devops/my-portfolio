@@ -166,7 +166,7 @@ resource "aws_ecs_service" "portfolio" {
     weight            = 100
   }
 
-  depends_on = [aws_lb_listener.portfolio]
+  depends_on = [aws_lb_listener.portfolio, aws_lb_listener.portfolio_https]
 
   tags = {
     Environment = var.environment
@@ -265,6 +265,24 @@ resource "aws_lb_listener" "portfolio" {
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# HTTPS Listener with SSL Certificate
+resource "aws_lb_listener" "portfolio_https" {
+  load_balancer_arn = aws_lb.portfolio.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = "arn:aws:acm:us-east-1:085047896115:certificate/b2a36396-678e-4178-a163-bbd6f8c915d9"
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.portfolio.arn
   }
@@ -279,6 +297,14 @@ resource "aws_security_group" "alb" {
     description = "HTTP"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -360,3 +386,101 @@ output "ecs_cluster_name" {
   description = "Name of the ECS cluster"
   value       = aws_ecs_cluster.portfolio.name
 }
+
+output "alb_dns_name" {
+  description = "DNS name of the load balancer"
+  value       = aws_lb.portfolio.dns_name
+}
+
+output "alb_https_url" {
+  description = "HTTPS URL of the load balancer"
+  value       = "https://${aws_lb.portfolio.dns_name}"
+}
+
+# GitHub OIDC Configuration for CI/CD - COMMENTED OUT (Using AWS Access Keys)
+# Uncomment if switching back to OIDC authentication
+#
+# data "aws_iam_openid_connect_provider" "github" {
+#   url = "https://token.actions.githubusercontent.com"
+# }
+#
+# # IAM Role for GitHub Actions
+# resource "aws_iam_role" "github_actions" {
+#   name = "${var.cluster_name}-github-actions-role"
+#
+#   assume_role_policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Principal = {
+#           Federated = data.aws_iam_openid_connect_provider.github.arn
+#         }
+#         Action = "sts:AssumeRoleWithWebIdentity"
+#         Condition = {
+#           StringEquals = {
+#             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+#           }
+#           StringLike = {
+#             "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*"
+#           }
+#         }
+#       }
+#     ]
+#   })
+#
+#   tags = {
+#     Environment = var.environment
+#   }
+# }
+#
+# # Policy for GitHub Actions to access ECS and ECR
+# resource "aws_iam_role_policy" "github_actions" {
+#   name = "${var.cluster_name}-github-actions-policy"
+#   role = aws_iam_role.github_actions.id
+#
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "ecr:GetAuthorizationToken",
+#           "ecr:BatchCheckLayerAvailability",
+#           "ecr:GetDownloadUrlForLayer",
+#           "ecr:BatchGetImage",
+#           "ecr:InitiateLayerUpload",
+#           "ecr:UploadLayerPart",
+#           "ecr:CompleteLayerUpload",
+#           "ecr:PutImage"
+#         ]
+#         Resource = "*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "ecs:DescribeTaskDefinition",
+#           "ecs:RegisterTaskDefinition",
+#           "ecs:DescribeServices",
+#           "ecs:UpdateService",
+#           "ecs:DescribeClusters"
+#         ]
+#         Resource = "*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "elbv2:DescribeLoadBalancers"
+#         ]
+#         Resource = "*"
+#       },
+#       {
+#         Effect = "Allow"
+#         Action = [
+#           "iam:PassRole"
+#         ]
+#         Resource = aws_iam_role.ecs_task_execution.arn
+#       }
+#     ]
+#   })
+# }
