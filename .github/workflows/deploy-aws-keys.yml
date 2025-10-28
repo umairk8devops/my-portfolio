@@ -41,7 +41,7 @@ jobs:
   #     run: npm run build
 
   fix-infrastructure:
-    name: Fix Target Group Configuration
+    name: Apply SSL/HTTPS and Infrastructure Updates
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     defaults:
@@ -67,12 +67,17 @@ jobs:
     - name: Terraform Init
       run: terraform init
       
-    - name: Apply target group fix
+    - name: Apply SSL and infrastructure fixes
       run: |
-        echo "🔧 Applying target group configuration fix..."
-        terraform plan -target=aws_lb_target_group.portfolio -out=tg-fix.tfplan
-        terraform apply -auto-approve tg-fix.tfplan
-        echo "✅ Target group configuration updated"
+        echo "🔧 Applying SSL/HTTPS and infrastructure fixes..."
+        terraform plan \
+          -target=aws_lb_target_group.portfolio \
+          -target=aws_lb_listener.portfolio \
+          -target=aws_lb_listener.portfolio_https \
+          -target=aws_security_group.alb \
+          -out=infrastructure-fix.tfplan
+        terraform apply -auto-approve infrastructure-fix.tfplan
+        echo "✅ SSL/HTTPS and target group configuration updated"
 
   build-and-push:
     name: Build and Push Docker Image
