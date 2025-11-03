@@ -82,8 +82,8 @@ resource "aws_launch_template" "ecs" {
 resource "aws_autoscaling_group" "ecs" {
   name                = "${var.cluster_name}-ecs-asg"
   vpc_zone_identifier = length(var.private_subnet_ids) > 0 ? var.private_subnet_ids : var.public_subnet_ids
-  target_group_arns   = [aws_lb_target_group.portfolio.arn]
-  health_check_type   = "ELB"
+  # target_group_arns   = [aws_lb_target_group.portfolio.arn]  # REMOVED - ECS manages this
+  health_check_type   = "EC2"  # Changed from ELB to EC2
   health_check_grace_period = 300
 
   min_size         = 1
