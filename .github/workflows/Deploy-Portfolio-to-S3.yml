@@ -1,0 +1,93 @@
+name: Deploy Portfolio to CloudFront/S3 (OIDC)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions
+
+      - name: Initialize Terraform
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan -input=false
+
+      - name: Terraform apply
+        run: terraform apply -input=false -auto-approve tfplan
+
+  deploy-static-site:
+    name: Build and Deploy to S3 + CloudFront
+    runs-on: ubuntu-latest
+    needs: terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: github-actions
+
+      - name: Sync build to S3
+        run: |
+          BUCKET_NAME=$(cd terraform && terraform output -raw static_site_bucket_name)
+          echo "S3 bucket: $BUCKET_NAME"
+          aws s3 sync build/ s3://$BUCKET_NAME --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DIST_ID=$(cd terraform && terraform output -raw cloudfront_distribution_id)
+          echo "CloudFront Distribution ID: $DIST_ID"
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths '/*'
+
+      - name: Output URL
+        run: |
+          SITE_URL=$(cd terraform && terraform output -raw static_site_url)
+          echo "Static site URL: $SITE_URL"
+          echo "Done. Use the URL above to verify the deployment."

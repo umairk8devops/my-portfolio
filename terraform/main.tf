@@ -26,11 +26,3 @@ provider "aws" {
 
 # Data sources
 data "aws_caller_identity" "current" {}
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-# Existing VPC (must be specified in terraform.tfvars)
-data "aws_vpc" "existing" {
-  id = var.vpc_id
-}

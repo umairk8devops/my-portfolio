@@ -12,62 +12,20 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "cluster_name" {
-  description = "Name of the ECS cluster"
+variable "enable_static_site" {
+  description = "Enable static site resources (S3 + CloudFront)"
+  type        = bool
+  default     = true
+}
+
+variable "static_site_bucket_name" {
+  description = "Optional fixed S3 bucket name for the static site. Leave empty to auto-generate."
   type        = string
-  default     = "portfolio-cluster"
+  default     = ""
 }
 
-variable "ecr_repository_name" {
-  description = "Name of the ECR repository"
+variable "static_site_custom_domain" {
+  description = "Optional custom domain for CloudFront (e.g. www.example.com). Leave empty for default CloudFront domain."
   type        = string
-  default     = "portfolio-app"
-}
-
-variable "github_repo" {
-  description = "GitHub repository in format owner/repo"
-  type        = string
-  default     = "umairk8devops/my-portfolio"
-}
-
-variable "node_instance_type" {
-  description = "EC2 instance type for ECS container instances"
-  type        = string
-  default     = "t3a.nano"
-}
-
-variable "node_desired_capacity" {
-  description = "Desired number of ECS container instances"
-  type        = number
-  default     = 1
-}
-
-variable "node_max_capacity" {
-  description = "Maximum number of ECS container instances"
-  type        = number
-  default     = 2
-}
-
-variable "node_min_capacity" {
-  description = "Minimum number of ECS container instances"
-  type        = number
-  default     = 1
-}
-
-# Existing VPC Configuration
-variable "vpc_id" {
-  description = "ID of existing VPC to use"
-  type        = string
-}
-
-variable "private_subnet_ids" {
-  description = "List of private subnet IDs for ECS tasks and ALB"
-  type        = list(string)
-  default     = []  # Default to empty list since we're using public subnets
-}
-
-variable "public_subnet_ids" {
-  description = "List of public subnet IDs for Application Load Balancer"
-  type        = list(string)
-  default     = []
+  default     = ""
 }
