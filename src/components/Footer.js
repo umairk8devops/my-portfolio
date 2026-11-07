@@ -4,10 +4,10 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="container">
-        <p>&copy; 2025 Umair Waqar. All rights reserved.</p>
+        <p>&copy; 2026 Umair Waqar. All rights reserved.</p>
         <div className="footer-links">
-          <a href="https://github.com/waqu235">GitHub</a>
-          <a href="https://linkedin.com/in/umairwaqar">LinkedIn</a>
+          <a href="https://github.com/umairk8devops">GitHub</a>
+          <a href="https://www.linkedin.com/in/umair-waqar-807b99233/">LinkedIn</a>
           <a href="mailto:waqu235@gmail.com">Email</a>
         </div>
       </div>
