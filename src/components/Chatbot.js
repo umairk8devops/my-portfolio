@@ -131,18 +131,20 @@ const Chatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="chatbot-suggestions">
-            {SUGGESTIONS.map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                className="chatbot-chip"
-                onClick={() => sendMessage(suggestion)}
-              >
-                {suggestion}
-              </button>
-            ))}
-          </div>
+          {!messages.some((message) => message.from === 'user') && (
+            <div className="chatbot-suggestions">
+              {SUGGESTIONS.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  className="chatbot-chip"
+                  onClick={() => sendMessage(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form className="chatbot-input-row" onSubmit={handleSubmit}>
             <input
