@@ -11,22 +11,36 @@ const Projects = () => {
     },
     {
       title: "WordPress Multisite Platform (300+ Sites)",
-      description: "Migrated and managed 300+ WordPress websites to containerized Docker solution on Fargate with automated CI/CD pipelines for updates and deployments across the entire organization.",
-      technologies: ["Docker", "ECS", "WordPress Multisite", "EC2", "GitHub Actions", "LAMP Stack"],
+      description: "Containerized 300+ legacy WordPress sites onto AWS Fargate with automated GitHub Actions CI/CD pipelines for updates and deployments across the entire organization. When a dev scanning tool pushed the shared EFS volume past its throughput ceiling and took the fleet down, I traced it, raised throughput, and prevented repeats with rate limiting and a separate cloned EFS volume for dev scanning.",
+      technologies: ["Docker", "Fargate", "WordPress Multisite", "EFS", "GitHub Actions", "LAMP Stack"],
+      github: "#",
+      demo: "#"
+    },
+    {
+      title: "AI Incident Investigation (AWS Bedrock)",
+      description: "Built an autonomous alerting and triage system pairing Dynatrace telemetry with AWS Bedrock. The AI digs through logs on its own, determines root cause, attaches log evidence, and generates actionable remediation steps before notifying engineering teams.",
+      technologies: ["AWS Bedrock", "Dynatrace", "Lambda", "Opsgenie", "Log Analysis"],
+      github: "#",
+      demo: "#"
+    },
+    {
+      title: "OpsHub — Agentic Self-Healing Platform",
+      description: "Architected an AI agent on AWS AgentCore that diagnoses and resolves infrastructure incidents autonomously, with approval-gated deploys. Used by IAM, network, security, Snowflake, and DevOps teams.",
+      technologies: ["AWS Bedrock", "AgentCore", "Python", "GitHub Actions", "Approval Gates"],
+      github: "#",
+      demo: "#"
+    },
+    {
+      title: "SSL Certificate Automation",
+      description: "Automated all manual SSL certificate handling into rotation across ~200 static sites, 10 server applications, and ~20 Okta TLS certificates — eliminating expiry-driven outages, with success/failure alerting on every renewal.",
+      technologies: ["AWS ACM", "Lambda", "Okta", "Terraform", "CloudWatch"],
       github: "#",
       demo: "#"
     },
     {
       title: "Automated Patch Management System",
-      description: "Implemented organization-wide automated patching workflow using Sysxense and AWS Systems Manager for cross-account server management and maintenance scheduling.",
-      technologies: ["Sysxense", "AWS SSM", "Cross-Account Management", "Automation", "Patch Compliance"],
-      github: "#",
-      demo: "#"
-    },
-    {
-      title: "Containerized Application Platform",
-      description: "Built and deployed containerized applications using Docker and ECS with automated scaling, monitoring, and deployment pipelines for production workloads.",
-      technologies: ["Docker", "ECS", "ECR", "CloudWatch", "Auto Scaling", "Load Balancing"],
+      description: "Implemented organization-wide automated patching workflow using Syxsense and AWS Systems Manager for cross-account server management and maintenance scheduling.",
+      technologies: ["Syxsense", "AWS SSM", "Cross-Account Management", "Automation", "Patch Compliance"],
       github: "#",
       demo: "#"
     },

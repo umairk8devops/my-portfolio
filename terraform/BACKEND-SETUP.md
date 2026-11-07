@@ -3,13 +3,13 @@
 This Terraform configuration uses S3 for remote state storage with the following setup:
 
 ## Backend Configuration (backend.tf)
-- **S3 Bucket**: `umair-backend`
+- **S3 Bucket**: `umair-portfolio-tfstate` (created by `terraform/bootstrap/` — see that directory's README; Terraform cannot create the bucket its own backend points at)
 - **State Key**: `portfolio/terraform.tfstate`
 - **Region**: `us-east-1`
 - **Encryption**: Enabled
 - **DynamoDB Lock Table**: `terraform-locks` (optional)
 
-The backend is configured in `backend.tf` file following standard Terraform practices.
+The backend is configured in `backend.tf` file following standard Terraform practices. Note: backend blocks cannot read variables or tfvars, so the bucket name is a literal in `backend.tf`.
 
 ## Required IAM Permissions
 
@@ -30,8 +30,8 @@ Your IAM user needs the following permissions for the S3 backend:
                 "s3:GetBucketVersioning"
             ],
             "Resource": [
-                "arn:aws:s3:::umair-backend",
-                "arn:aws:s3:::umair-backend/*"
+                "arn:aws:s3:::umair-portfolio-tfstate",
+                "arn:aws:s3:::umair-portfolio-tfstate/*"
             ]
         }
     ]
@@ -57,6 +57,17 @@ Your IAM user needs the following permissions for the S3 backend:
 ```
 
 ## First Time Setup
+
+### 0. Create the state bucket first (new account, once)
+```bash
+cd terraform/bootstrap
+terraform init
+terraform apply
+```
+See `terraform/bootstrap/README.md` for the full run order, including the
+cross-account access for the GitHub Actions deploy role and migrating the
+existing state from the old `umair-backend` bucket. Do not run `terraform init`
+in `terraform/` until the new bucket exists.
 
 ### 1. Create DynamoDB Table (Optional - for state locking)
 ```bash
@@ -103,7 +114,7 @@ terraform refresh
 ## Troubleshooting
 
 ### Access Denied Error
-- Verify IAM user has S3 permissions for `umair-backend` bucket
+- Verify IAM user has S3 permissions for `umair-portfolio-tfstate` bucket
 - Check AWS credentials are properly configured
 - Ensure bucket exists and is in the correct region
 

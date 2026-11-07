@@ -4,23 +4,31 @@ const Skills = () => {
   const skillCategories = [
     {
       title: "Cloud Platforms & Cost Management",
-      skills: ["AWS", "EC2", "S3", "RDS", "Lambda", "CloudWatch", "AWS Budgeting", "Cost Optimization"]
+      skills: ["AWS", "EC2", "EKS", "Fargate", "S3", "RDS", "DynamoDB", "Lambda", "CloudFront", "CloudWatch", "AWS Budgeting", "Cost Optimization"]
     },
     {
       title: "Infrastructure as Code",
-      skills: ["Terraform", "OpenTofu", "AWS CDK", "CloudFormation", "Monitoring as Code"]
+      skills: ["Terraform", "OpenTofu", "AWS CDK", "CloudFormation", "Helm", "Monitoring as Code"]
     },
     {
       title: "Containerization & Orchestration",
-      skills: ["Docker", "ECS", "ECR", "Container Security", "Multi-container Apps"]
+      skills: ["Docker", "ECS", "EKS", "Kubernetes", "Helm", "ECR", "Container Security", "Multi-container Apps"]
     },
     {
       title: "CI/CD & DevOps",
-      skills: ["GitHub Actions", "Pipeline Automation", "DevOps CI/CD", "Deployment Strategies"]
+      skills: ["GitHub Actions", "AWS CodePipeline", "Pipeline Automation", "DevOps CI/CD", "Deployment Strategies"]
+    },
+    {
+      title: "AI & Automation",
+      skills: ["AWS Bedrock", "AgentCore", "Autonomous RCA", "Self-Healing Agents", "Lambda", "Step Functions"]
+    },
+    {
+      title: "Messaging & Caching",
+      skills: ["SQS", "SNS", "SES", "ElastiCache"]
     },
     {
       title: "Monitoring & Observability",
-      skills: ["Dynatrace", "Monitoring as Code", "CloudWatch", "Infrastructure Monitoring"]
+      skills: ["Dynatrace", "Datadog", "Monitoring as Code", "CloudWatch", "Opsgenie", "Infrastructure Monitoring"]
     },
     {
       title: "Security & Identity Management",
@@ -28,15 +36,15 @@ const Skills = () => {
     },
     {
       title: "Database Management",
-      skills: ["AWS RDS", "On-Premise SQL", "MySQL", "Database Migration", "Database Security"]
+      skills: ["AWS RDS", "DynamoDB", "Snowflake", "On-Premise SQL", "MySQL", "Database Migration", "Database Security"]
     },
     {
       title: "System Administration",
-      skills: ["Linux Proficiency", "Sysxense", "SSM", "Cross-Account Management", "Automated Patching"]
+      skills: ["Linux Proficiency", "Syxsense", "SSM", "Cross-Account Management", "Automated Patching"]
     },
     {
       title: "Development & Scripting",
-      skills: ["TypeScript", "Python", "Bash", "YAML", "Terraform HCL", "Automation Scripts"]
+      skills: ["TypeScript", "Python", "Bash", "PowerShell", "YAML", "Terraform HCL", "Automation Scripts"]
     },
     {
       title: "Documentation & Design",
