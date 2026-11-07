@@ -1,7 +1,7 @@
 import React from 'react';
 
 const RunningBanner = () => {
-  const bannerText = "🚀 This Portfolio is Hosted on AWS S3 + CloudFront • Static Site, Zero Servers • Infrastructure as Code with Terraform • Automated CI/CD with GitHub Actions •";
+  const bannerText = "🚀 Static Site • Zero Servers • Infrastructure as Code with Terraform • Automated CI/CD with GitHub Actions •";
   const gap = "        "; // Creates visual gap between repeating text
   
   return (
