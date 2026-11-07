@@ -1,0 +1,57 @@
+# Deploy the React portfolio to GitHub Pages (free hosting + free
+# umairk8devops.github.io domain). Runs on every push to main.
+#
+# One-time setup in the repo (cannot be done from this file):
+#   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+# After that, the site is live at https://umairk8devops.github.io/my-portfolio/
+# To use a custom domain later (e.g. umairportfolio.com), add it in that same
+# Pages settings page and point the domain's DNS at GitHub Pages — still free.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload build output
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
