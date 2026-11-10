@@ -1,8 +1,8 @@
 name: Deploy Portfolio to CloudFront/S3 (OIDC)
 
+# Disabled on push: the site now deploys via GitHub Pages (deploy-pages.yml).
+# Kept for the AWS S3 + CloudFront path; still runnable manually from Actions.
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 env:
