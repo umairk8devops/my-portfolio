@@ -36,6 +36,36 @@ const Certifications = () => {
               <p className="cert-title">Solutions Architect Associate</p>
             </a>
           </div>
+          <div className="cert-item">
+            <a 
+              href="https://www.credly.com/badges/62162ec7-5b48-43d7-aa35-0e22d5d5379f/public_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cert-link"
+            >
+              <img 
+                src="/aws-cloud-quest-cloud-practitioner.png" 
+                alt="AWS Cloud Quest: Cloud Practitioner - Training Badge"
+                className="cert-badge"
+              />
+              <p className="cert-title">Cloud Quest Cloud Practitioner</p>
+            </a>
+          </div>
+          <div className="cert-item">
+            <a 
+              href="https://www.credly.com/badges/f7cbbba4-5177-452f-b916-dc5b5a03f8ff/public_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cert-link"
+            >
+              <img 
+                src="/aws-simulearn-ai-practitioner.png" 
+                alt="AWS SimuLearn - AI Practitioner - Training Badge"
+                className="cert-badge"
+              />
+              <p className="cert-title">SimuLearn AI Practitioner</p>
+            </a>
+          </div>
         </div>
       </div>
     </section>
